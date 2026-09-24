@@ -1,0 +1,23 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Registration {
+  id          Int       @id @default(autoincrement())
+  orgName     String
+  contactName String
+  phone       String
+  email       String
+  boxes       Int
+  amount      Decimal   @db.Decimal(10, 2)
+  note        String?
+  paid        Boolean   @default(false)
+  paidAt      DateTime?
+  emailSent   Boolean   @default(false)
+  createdAt   DateTime  @default(now())
+}

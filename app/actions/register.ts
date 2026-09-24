@@ -1,0 +1,87 @@
+"use server";
+
+import { prisma } from "@/lib/prisma";
+import { computeAmount } from "@/lib/pricing";
+import { formatReference } from "@/lib/reference";
+import { sendConfirmationEmail } from "@/lib/email";
+import { revalidatePath } from "next/cache";
+
+export type RegisterState =
+  | { status: "idle" }
+  | { status: "error"; message: string }
+  | {
+      status: "success";
+      reference: string;
+      boxes: number;
+      amount: number;
+      emailSent: boolean;
+    };
+
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+export async function registerAction(
+  _prevState: RegisterState,
+  formData: FormData
+): Promise<RegisterState> {
+  const orgName = String(formData.get("orgName") || "").trim();
+  const contactName = String(formData.get("contactName") || "").trim();
+  const phone = String(formData.get("phone") || "").trim();
+  const email = String(formData.get("email") || "").trim();
+  const boxesRaw = String(formData.get("boxes") || "").trim();
+  const note = String(formData.get("note") || "").trim();
+
+  if (!orgName || !contactName || !phone || !email) {
+    return { status: "error", message: "請完整填寫單位/姓名、聯絡人、電話與 Email。" };
+  }
+
+  if (!EMAIL_PATTERN.test(email)) {
+    return { status: "error", message: "請輸入正確的 Email 格式。" };
+  }
+
+  const boxes = Number(boxesRaw);
+  if (!Number.isInteger(boxes) || boxes <= 0) {
+    return { status: "error", message: "請輸入正確的認購箱數（至少 1 箱的整數）。" };
+  }
+
+  const amount = computeAmount(boxes);
+
+  const registration = await prisma.registration.create({
+    data: {
+      orgName,
+      contactName,
+      phone,
+      email,
+      boxes,
+      amount,
+      note: note || null,
+    },
+  });
+
+  const reference = formatReference(registration.id);
+
+  const emailResult = await sendConfirmationEmail({
+    to: email,
+    contactName,
+    orgName,
+    boxes,
+    amount,
+    reference,
+  });
+
+  if (emailResult.sent) {
+    await prisma.registration.update({
+      where: { id: registration.id },
+      data: { emailSent: true },
+    });
+  }
+
+  revalidatePath("/admin");
+
+  return {
+    status: "success",
+    reference,
+    boxes,
+    amount,
+    emailSent: emailResult.sent,
+  };
+}
