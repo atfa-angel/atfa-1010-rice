@@ -257,7 +257,7 @@ function ConfirmationPanel({
         <p>BSB：{BANK_INFO.bsb}</p>
         <p>帳號 Account Number：{BANK_INFO.accountNumber}</p>
         <p className="mt-2 font-medium text-red-700">
-          請於轉帳備註欄位填寫登記編號「{state.reference}」，以利核對款項。
+          請務必於轉帳備註欄位填寫您登記的電話號碼「{state.phone}」，以便我們核對款項。
         </p>
       </div>
 

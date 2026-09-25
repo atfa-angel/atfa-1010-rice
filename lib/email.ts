@@ -10,6 +10,7 @@ export type ConfirmationEmailParams = {
   packs: number;
   amount: number;
   reference: string;
+  phone: string;
 };
 
 const BRAND = "#1e511f";
@@ -74,6 +75,7 @@ export function renderEmailHtml(params: ConfirmationEmailParams): string {
   const contactName = escapeHtml(params.contactName);
   const orgName = escapeHtml(params.orgName);
   const reference = escapeHtml(params.reference);
+  const phone = escapeHtml(params.phone);
   const amount = formatAmount(params.amount);
   const quantity = formatQuantity(params.boxes, params.packs);
 
@@ -85,7 +87,7 @@ export function renderEmailHtml(params: ConfirmationEmailParams): string {
   <title>台灣優米義賣登記確認</title>
 </head>
 <body style="margin:0;padding:0;background:#f5f8f5;">
-  <div style="display:none;max-height:0;overflow:hidden;opacity:0;">您的登記編號 ${reference}，應付金額 AU$${amount}，匯款資訊請見內文。</div>
+  <div style="display:none;max-height:0;overflow:hidden;opacity:0;">您的登記編號 ${reference}，應付金額 AU$${amount}，匯款備註請填登記的電話號碼，詳見內文。</div>
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f5f8f5;padding:24px 12px;">
     <tr>
       <td align="center">
@@ -118,6 +120,7 @@ export function renderEmailHtml(params: ConfirmationEmailParams): string {
               <div style="font-size:16px;font-weight:700;color:${BRAND};border-left:4px solid ${BRAND};padding-left:10px;margin-bottom:8px;">登記資料</div>
               <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
                 ${row("登記編號", reference, { strong: true })}
+                ${row("登記電話", phone)}
                 ${row("認購單位／姓名", orgName)}
                 ${row("認購數量", quantity)}
                 ${row("單價", `AU$${formatAmount(BOX_PRICE)} ／箱（每箱 12 包／18 公斤）<br>AU$${formatAmount(PACK_PRICE)} ／包（1.5 公斤）`)}
@@ -136,7 +139,7 @@ export function renderEmailHtml(params: ConfirmationEmailParams): string {
                     <div style="margin-top:6px;"><span style="color:#666666;">BSB</span><br><strong style="font-size:18px;letter-spacing:1px;">${BANK_INFO.bsb}</strong></div>
                     <div style="margin-top:6px;"><span style="color:#666666;">帳號 Account Number</span><br><strong style="font-size:18px;letter-spacing:1px;">${BANK_INFO.accountNumber}</strong></div>
                     <div style="margin-top:6px;"><span style="color:#666666;">匯款金額 Amount</span><br><strong style="font-size:18px;color:${BRAND};">AU$${amount}</strong></div>
-                    <div style="margin-top:6px;"><span style="color:#666666;">備註 Reference（請務必填寫）</span><br><strong style="font-size:18px;color:#b91c1c;">${reference}</strong></div>
+                    <div style="margin-top:6px;"><span style="color:#666666;">備註 Reference（請務必填寫您登記的電話號碼）</span><br><strong style="font-size:18px;color:#b91c1c;">${phone}</strong></div>
                   </td>
                 </tr>
               </table>
@@ -149,7 +152,7 @@ export function renderEmailHtml(params: ConfirmationEmailParams): string {
               <ol style="margin:0;padding-left:20px;">
                 <li>使用網路銀行或手機銀行，轉帳至上方帳戶（BSB＋帳號）。</li>
                 <li>匯款金額請填 <strong>AU$${amount}</strong>。</li>
-                <li>備註／Reference 欄位請填 <strong style="color:#b91c1c;">${reference}</strong>，方便我們核對款項。</li>
+                <li>備註／Reference 欄位請務必填寫您登記時留的電話號碼 <strong style="color:#b91c1c;">${phone}</strong>，以便我們核對款項。</li>
                 <li>為利於 10 月 10 日前彙整捐款金額，請您儘早完成匯款。</li>
               </ol>
             </td>
@@ -200,6 +203,7 @@ export function renderEmailText(params: ConfirmationEmailParams): string {
 
 【登記資料】
 登記編號：${params.reference}
+登記電話：${params.phone}
 認購數量：${formatQuantity(params.boxes, params.packs)}
 單價：AU$${formatAmount(BOX_PRICE)} ／箱（每箱 12 包／18 公斤）；AU$${formatAmount(PACK_PRICE)} ／包（1.5 公斤）
 應付金額：AU$${amount}
@@ -209,12 +213,12 @@ export function renderEmailText(params: ConfirmationEmailParams): string {
 BSB：${BANK_INFO.bsb}
 帳號 Account Number：${BANK_INFO.accountNumber}
 匯款金額：AU$${amount}
-備註 Reference（請務必填寫）：${params.reference}
+備註 Reference（請務必填寫您登記的電話號碼）：${params.phone}
 
 【匯款步驟】
 1. 使用網路銀行或手機銀行，轉帳至上方帳戶。
 2. 匯款金額請填 AU$${amount}。
-3. 備註／Reference 欄位請填 ${params.reference}，方便我們核對款項。
+3. 備註／Reference 欄位請務必填寫您登記時留的電話號碼 ${params.phone}，以便我們核對款項。
 4. 為利於 10 月 10 日前彙整捐款金額，請您儘早完成匯款。
 
 【取貨說明】

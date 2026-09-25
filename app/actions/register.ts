@@ -12,6 +12,7 @@ export type RegisterState =
   | {
       status: "success";
       reference: string;
+      phone: string;
       boxes: number;
       packs: number;
       amount: number;
@@ -81,6 +82,7 @@ export async function registerAction(
     packs,
     amount,
     reference,
+    phone,
   });
 
   if (emailResult.sent) {
@@ -95,6 +97,7 @@ export async function registerAction(
   return {
     status: "success",
     reference,
+    phone,
     boxes,
     packs,
     amount,
