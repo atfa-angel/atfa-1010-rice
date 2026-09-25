@@ -13,11 +13,21 @@ export type RegisterState =
       status: "success";
       reference: string;
       boxes: number;
+      packs: number;
       amount: number;
       emailSent: boolean;
     };
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const MAX_QUANTITY = 10000;
+
+function parseQuantity(raw: FormDataEntryValue | null): number | null {
+  const text = String(raw ?? "").trim();
+  if (text === "") return 0;
+  const value = Number(text);
+  if (!Number.isInteger(value) || value < 0 || value > MAX_QUANTITY) return null;
+  return value;
+}
 
 export async function registerAction(
   _prevState: RegisterState,
@@ -27,7 +37,6 @@ export async function registerAction(
   const contactName = String(formData.get("contactName") || "").trim();
   const phone = String(formData.get("phone") || "").trim();
   const email = String(formData.get("email") || "").trim();
-  const boxesRaw = String(formData.get("boxes") || "").trim();
   const note = String(formData.get("note") || "").trim();
 
   if (!orgName || !contactName || !phone || !email) {
@@ -38,12 +47,16 @@ export async function registerAction(
     return { status: "error", message: "請輸入正確的 Email 格式。" };
   }
 
-  const boxes = Number(boxesRaw);
-  if (!Number.isInteger(boxes) || boxes <= 0) {
-    return { status: "error", message: "請輸入正確的認購箱數（至少 1 箱的整數）。" };
+  const boxes = parseQuantity(formData.get("boxes"));
+  const packs = parseQuantity(formData.get("packs"));
+  if (boxes === null || packs === null) {
+    return { status: "error", message: "箱數與包數請輸入 0 以上的整數。" };
+  }
+  if (boxes + packs === 0) {
+    return { status: "error", message: "請至少認購 1 箱或 1 包。" };
   }
 
-  const amount = computeAmount(boxes);
+  const amount = computeAmount(boxes, packs);
 
   const registration = await prisma.registration.create({
     data: {
@@ -52,6 +65,7 @@ export async function registerAction(
       phone,
       email,
       boxes,
+      packs,
       amount,
       note: note || null,
     },
@@ -64,6 +78,7 @@ export async function registerAction(
     contactName,
     orgName,
     boxes,
+    packs,
     amount,
     reference,
   });
@@ -81,6 +96,7 @@ export async function registerAction(
     status: "success",
     reference,
     boxes,
+    packs,
     amount,
     emailSent: emailResult.sent,
   };

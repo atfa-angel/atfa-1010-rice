@@ -14,7 +14,8 @@ model Registration {
   contactName String
   phone       String
   email       String
-  boxes       Int
+  boxes       Int       @default(0)
+  packs       Int       @default(0)
   amount      Decimal   @db.Decimal(10, 2)
   note        String?
   paid        Boolean   @default(false)

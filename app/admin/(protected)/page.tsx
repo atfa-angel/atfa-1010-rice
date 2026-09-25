@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/prisma";
-import { formatAmount } from "@/lib/pricing";
+import { PACKS_PER_BOX, formatAmount } from "@/lib/pricing";
 import { formatReference } from "@/lib/reference";
 import { logoutAction } from "@/app/actions/admin";
 import SiteHeader from "@/components/SiteHeader";
@@ -12,7 +12,8 @@ export default async function AdminDashboardPage() {
     orderBy: { createdAt: "desc" },
   });
 
-  const totalBoxes = registrations.reduce((sum, r) => sum + r.boxes, 0);
+  const totalPacks = registrations.reduce((sum, r) => sum + r.boxes * PACKS_PER_BOX + r.packs, 0);
+  const totalQuantity = `${Math.floor(totalPacks / PACKS_PER_BOX)} 箱 ${totalPacks % PACKS_PER_BOX} 包`;
   const totalAmount = registrations.reduce((sum, r) => sum + Number(r.amount), 0);
   const paidAmount = registrations
     .filter((r) => r.paid)
@@ -39,7 +40,7 @@ export default async function AdminDashboardPage() {
       <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-6 px-4 py-8 sm:px-6">
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-5">
           <SummaryCard label="登記筆數" value={String(registrations.length)} />
-          <SummaryCard label="總箱數" value={`${totalBoxes} 箱`} />
+          <SummaryCard label={`總數量（共 ${totalPacks} 包）`} value={totalQuantity} />
           <SummaryCard label="應收總額" value={`AU$${formatAmount(totalAmount)}`} />
           <SummaryCard label={`已收款 (${paidCount})`} value={`AU$${formatAmount(paidAmount)}`} accent="green" />
           <SummaryCard label="未收款" value={`AU$${formatAmount(unpaidAmount)}`} accent="red" />
@@ -56,6 +57,7 @@ export default async function AdminDashboardPage() {
                 <th className="px-3 py-2.5 font-medium">電話</th>
                 <th className="px-3 py-2.5 font-medium">Email</th>
                 <th className="px-3 py-2.5 text-right font-medium">箱數</th>
+                <th className="px-3 py-2.5 text-right font-medium">包數</th>
                 <th className="px-3 py-2.5 text-right font-medium">金額</th>
                 <th className="px-3 py-2.5 font-medium">確認信</th>
                 <th className="px-3 py-2.5 font-medium">備註</th>
@@ -74,6 +76,7 @@ export default async function AdminDashboardPage() {
                   <td className="whitespace-nowrap px-3 py-2">{r.phone}</td>
                   <td className="px-3 py-2">{r.email}</td>
                   <td className="px-3 py-2 text-right">{r.boxes}</td>
+                  <td className="px-3 py-2 text-right">{r.packs}</td>
                   <td className="whitespace-nowrap px-3 py-2 text-right font-medium">
                     AU${formatAmount(Number(r.amount))}
                   </td>
@@ -94,7 +97,7 @@ export default async function AdminDashboardPage() {
               ))}
               {registrations.length === 0 && (
                 <tr>
-                  <td colSpan={11} className="px-3 py-8 text-center text-gray-400">
+                  <td colSpan={12} className="px-3 py-8 text-center text-gray-400">
                     目前尚無登記資料
                   </td>
                 </tr>

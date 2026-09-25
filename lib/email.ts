@@ -1,12 +1,13 @@
 import { Resend } from "resend";
 import { BANK_INFO } from "./bank";
-import { BOX_PRICE, BOX_WEIGHT_KG, PACKS_PER_BOX, formatAmount } from "./pricing";
+import { BOX_PRICE, PACK_PRICE, PICKUP_NOTE, formatAmount, formatQuantity } from "./pricing";
 
 export type ConfirmationEmailParams = {
   to: string;
   contactName: string;
   orgName: string;
   boxes: number;
+  packs: number;
   amount: number;
   reference: string;
 };
@@ -74,6 +75,7 @@ export function renderEmailHtml(params: ConfirmationEmailParams): string {
   const orgName = escapeHtml(params.orgName);
   const reference = escapeHtml(params.reference);
   const amount = formatAmount(params.amount);
+  const quantity = formatQuantity(params.boxes, params.packs);
 
   return `<!DOCTYPE html>
 <html lang="zh-Hant">
@@ -117,8 +119,8 @@ export function renderEmailHtml(params: ConfirmationEmailParams): string {
               <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
                 ${row("登記編號", reference, { strong: true })}
                 ${row("認購單位／姓名", orgName)}
-                ${row("認購數量", `${params.boxes} 箱（每箱 ${PACKS_PER_BOX} 包／${BOX_WEIGHT_KG} 公斤）`)}
-                ${row("單價", `AU$${formatAmount(BOX_PRICE)} ／箱`)}
+                ${row("認購數量", quantity)}
+                ${row("單價", `AU$${formatAmount(BOX_PRICE)} ／箱（每箱 12 包／18 公斤）<br>AU$${formatAmount(PACK_PRICE)} ／包（1.5 公斤）`)}
                 ${row("應付金額", `<span style="font-size:20px;">AU$${amount}</span>`, { strong: true, color: BRAND })}
               </table>
             </td>
@@ -150,6 +152,13 @@ export function renderEmailHtml(params: ConfirmationEmailParams): string {
                 <li>備註／Reference 欄位請填 <strong style="color:#b91c1c;">${reference}</strong>，方便我們核對款項。</li>
                 <li>為利於 10 月 10 日前彙整捐款金額，請您儘早完成匯款。</li>
               </ol>
+            </td>
+          </tr>
+
+          <tr>
+            <td style="padding:16px 28px 8px 28px;font-size:14px;line-height:1.8;">
+              <div style="font-size:16px;font-weight:700;color:${BRAND};border-left:4px solid ${BRAND};padding-left:10px;margin-bottom:8px;">取貨說明</div>
+              <p style="margin:0;">${PICKUP_NOTE}請留意您的 Email 與電話。</p>
             </td>
           </tr>
 
@@ -191,8 +200,8 @@ export function renderEmailText(params: ConfirmationEmailParams): string {
 
 【登記資料】
 登記編號：${params.reference}
-認購數量：${params.boxes} 箱（每箱 ${PACKS_PER_BOX} 包／${BOX_WEIGHT_KG} 公斤）
-單價：AU$${formatAmount(BOX_PRICE)} ／箱
+認購數量：${formatQuantity(params.boxes, params.packs)}
+單價：AU$${formatAmount(BOX_PRICE)} ／箱（每箱 12 包／18 公斤）；AU$${formatAmount(PACK_PRICE)} ／包（1.5 公斤）
 應付金額：AU$${amount}
 
 【匯款資訊】
@@ -207,6 +216,9 @@ BSB：${BANK_INFO.bsb}
 2. 匯款金額請填 AU$${amount}。
 3. 備註／Reference 欄位請填 ${params.reference}，方便我們核對款項。
 4. 為利於 10 月 10 日前彙整捐款金額，請您儘早完成匯款。
+
+【取貨說明】
+${PICKUP_NOTE}請留意您的 Email 與電話。
 
 【捐款去向】
 雪梨地區的義賣所得將全數捐給 Thoracic Oncology Group Australasia（TOGA），支持澳洲胸腔腫瘤（肺癌）研究。

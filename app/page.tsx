@@ -1,8 +1,18 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import { registerAction, type RegisterState } from "@/app/actions/register";
-import { formatAmount } from "@/lib/pricing";
+import {
+  BOX_PRICE,
+  BOX_WEIGHT_KG,
+  PACKS_PER_BOX,
+  PACK_PRICE,
+  PACK_WEIGHT_KG,
+  PICKUP_NOTE,
+  computeAmount,
+  formatAmount,
+  formatQuantity,
+} from "@/lib/pricing";
 import { BANK_INFO } from "@/lib/bank";
 import SiteHeader from "@/components/SiteHeader";
 
@@ -11,8 +21,20 @@ const initialState: RegisterState = { status: "idle" };
 const inputClass =
   "w-full rounded-md border border-brand-border bg-white px-3 py-2 text-sm outline-none transition focus:border-brand focus:ring-2 focus:ring-brand/20";
 
+function toCount(value: string): number {
+  const n = Number(value);
+  return Number.isInteger(n) && n > 0 ? n : 0;
+}
+
 export default function HomePage() {
   const [state, formAction, isPending] = useActionState(registerAction, initialState);
+  const [boxesText, setBoxesText] = useState("");
+  const [packsText, setPacksText] = useState("");
+
+  const boxes = toCount(boxesText);
+  const packs = toCount(packsText);
+  const total = computeAmount(boxes, packs);
+  const hasQuantity = boxes + packs > 0;
 
   return (
     <>
@@ -35,14 +57,21 @@ export default function HomePage() {
         </section>
 
         <section className="rounded-xl border border-brand-border bg-white p-5">
-          <h2 className="mb-3 border-l-4 border-brand pl-3 font-bold text-brand">義賣資訊</h2>
-          <ul className="space-y-1 text-sm">
-            <li>每包 1.5 公斤，一箱 12 包／18 公斤</li>
-            <li>
-              每包 AU$10.10 元，<span className="font-semibold text-brand">每箱 AU$121.20 元</span>
-            </li>
+          <h2 className="mb-3 border-l-4 border-brand pl-3 font-bold text-brand">義賣資訊與價格</h2>
+          <div className="grid grid-cols-2 gap-3">
+            <PriceCard
+              title="整箱"
+              price={BOX_PRICE}
+              unit="箱"
+              detail={`${PACKS_PER_BOX} 包／${BOX_WEIGHT_KG} 公斤`}
+            />
+            <PriceCard title="單包" price={PACK_PRICE} unit="包" detail={`${PACK_WEIGHT_KG} 公斤`} />
+          </div>
+          <ul className="mt-4 space-y-1 text-sm">
+            <li>可認購整箱或單包，也可以兩者搭配</li>
             <li>每箱體積 44 x 33 x 25 cm</li>
             <li>由澳洲各大僑團、僑領、台人慈善機構組織認購</li>
+            <li className="font-medium text-brand">取貨方式：{PICKUP_NOTE}</li>
           </ul>
         </section>
 
@@ -56,7 +85,35 @@ export default function HomePage() {
             <Field label="聯絡人" name="contactName" required />
             <Field label="聯絡電話" name="phone" type="tel" required />
             <Field label="Email（用於接收匯款資訊）" name="email" type="email" required />
-            <Field label="認購箱數" name="boxes" type="number" min={1} step={1} required />
+
+            <fieldset className="space-y-3 rounded-lg border border-brand-border bg-brand-soft p-4">
+              <legend className="px-1 text-sm font-medium">認購數量（箱、包可擇一或搭配）</legend>
+              <div className="grid grid-cols-2 gap-3">
+                <QuantityField
+                  label={`整箱（AU$${formatAmount(BOX_PRICE)}／箱）`}
+                  name="boxes"
+                  unit="箱"
+                  value={boxesText}
+                  onChange={setBoxesText}
+                />
+                <QuantityField
+                  label={`單包（AU$${formatAmount(PACK_PRICE)}／包）`}
+                  name="packs"
+                  unit="包"
+                  value={packsText}
+                  onChange={setPacksText}
+                />
+              </div>
+              <div className="flex items-baseline justify-between border-t border-brand-border pt-3 text-sm">
+                <span className="text-gray-600">
+                  {hasQuantity ? `認購 ${formatQuantity(boxes, packs)}` : "尚未選擇數量"}
+                </span>
+                <span>
+                  應付金額{" "}
+                  <strong className="text-xl text-brand">AU${formatAmount(total)}</strong>
+                </span>
+              </div>
+            </fieldset>
 
             <div className="space-y-1">
               <label htmlFor="note" className="block text-sm font-medium">
@@ -65,16 +122,18 @@ export default function HomePage() {
               <textarea id="note" name="note" rows={3} className={inputClass} />
             </div>
 
+            <p className="rounded-md bg-brand-soft px-3 py-2 text-xs text-brand">取貨方式：{PICKUP_NOTE}</p>
+
             {state.status === "error" && (
               <p className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">{state.message}</p>
             )}
 
             <button
               type="submit"
-              disabled={isPending}
-              className="w-full rounded-md bg-brand px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-dark disabled:opacity-60"
+              disabled={isPending || !hasQuantity}
+              className="w-full rounded-md bg-brand px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-dark disabled:opacity-50"
             >
-              {isPending ? "送出中..." : "送出登記"}
+              {isPending ? "送出中..." : hasQuantity ? `送出登記（AU$${formatAmount(total)}）` : "請先輸入認購數量"}
             </button>
           </form>
         )}
@@ -87,35 +146,80 @@ export default function HomePage() {
   );
 }
 
+function PriceCard({
+  title,
+  price,
+  unit,
+  detail,
+}: {
+  title: string;
+  price: number;
+  unit: string;
+  detail: string;
+}) {
+  return (
+    <div className="rounded-lg border border-brand-border bg-brand-soft p-3 text-center">
+      <p className="text-xs text-gray-600">{title}（{detail}）</p>
+      <p className="mt-1 text-2xl font-bold text-brand">AU${formatAmount(price)}</p>
+      <p className="text-xs text-gray-600">每{unit}</p>
+    </div>
+  );
+}
+
 function Field({
   label,
   name,
   type = "text",
   required,
-  min,
-  step,
 }: {
   label: string;
   name: string;
   type?: string;
   required?: boolean;
-  min?: number;
-  step?: number;
 }) {
   return (
     <div className="space-y-1">
       <label htmlFor={name} className="block text-sm font-medium">
         {label}
       </label>
-      <input
-        id={name}
-        name={name}
-        type={type}
-        required={required}
-        min={min}
-        step={step}
-        className={inputClass}
-      />
+      <input id={name} name={name} type={type} required={required} className={inputClass} />
+    </div>
+  );
+}
+
+function QuantityField({
+  label,
+  name,
+  unit,
+  value,
+  onChange,
+}: {
+  label: string;
+  name: string;
+  unit: string;
+  value: string;
+  onChange: (value: string) => void;
+}) {
+  return (
+    <div className="space-y-1">
+      <label htmlFor={name} className="block text-xs font-medium">
+        {label}
+      </label>
+      <div className="flex items-center gap-2">
+        <input
+          id={name}
+          name={name}
+          type="number"
+          min={0}
+          step={1}
+          inputMode="numeric"
+          placeholder="0"
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          className={inputClass}
+        />
+        <span className="text-sm text-gray-600">{unit}</span>
+      </div>
     </div>
   );
 }
@@ -132,8 +236,8 @@ function ConfirmationPanel({
       <dl className="grid grid-cols-2 gap-y-2 text-sm">
         <dt className="text-gray-600">登記編號</dt>
         <dd className="font-mono font-semibold">{state.reference}</dd>
-        <dt className="text-gray-600">認購箱數</dt>
-        <dd>{state.boxes} 箱</dd>
+        <dt className="text-gray-600">認購數量</dt>
+        <dd>{formatQuantity(state.boxes, state.packs)}</dd>
         <dt className="text-gray-600">應付金額</dt>
         <dd className="font-semibold text-brand">AU${formatAmount(state.amount)}</dd>
       </dl>
@@ -147,6 +251,8 @@ function ConfirmationPanel({
           請於轉帳備註欄位填寫登記編號「{state.reference}」，以利核對款項。
         </p>
       </div>
+
+      <p className="rounded-md bg-white px-3 py-2 text-sm text-brand">取貨方式：{PICKUP_NOTE}</p>
 
       <p className="text-xs text-gray-600">
         {state.emailSent
