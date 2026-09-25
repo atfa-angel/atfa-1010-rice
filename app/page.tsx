@@ -59,16 +59,16 @@ export default function HomePage() {
         <section className="rounded-xl border border-brand-border bg-white p-5">
           <h2 className="mb-3 border-l-4 border-brand pl-3 font-bold text-brand">義賣資訊與價格</h2>
           <div className="grid grid-cols-2 gap-3">
+            <PriceCard title="單包" price={PACK_PRICE} unit="包" detail={`${PACK_WEIGHT_KG} 公斤`} />
             <PriceCard
               title="整箱"
               price={BOX_PRICE}
               unit="箱"
               detail={`${PACKS_PER_BOX} 包／${BOX_WEIGHT_KG} 公斤`}
             />
-            <PriceCard title="單包" price={PACK_PRICE} unit="包" detail={`${PACK_WEIGHT_KG} 公斤`} />
           </div>
           <ul className="mt-4 space-y-1 text-sm">
-            <li>可認購整箱或單包，也可以兩者搭配</li>
+            <li>可選擇單包購買，或整箱購買</li>
             <li>每箱體積 44 x 33 x 25 cm</li>
             <li>由澳洲各大僑團、僑領、台人慈善機構組織認購</li>
             <li className="font-medium text-brand">取貨方式：{PICKUP_NOTE}</li>
@@ -87,23 +87,32 @@ export default function HomePage() {
             <Field label="Email（用於接收匯款資訊）" name="email" type="email" required />
 
             <fieldset className="space-y-3 rounded-lg border border-brand-border bg-brand-soft p-4">
-              <legend className="px-1 text-sm font-medium">認購數量（箱、包可擇一或搭配）</legend>
-              <div className="grid grid-cols-2 gap-3">
-                <QuantityField
-                  label={`整箱（AU$${formatAmount(BOX_PRICE)}／箱）`}
-                  name="boxes"
-                  unit="箱"
-                  value={boxesText}
-                  onChange={setBoxesText}
-                />
-                <QuantityField
-                  label={`單包（AU$${formatAmount(PACK_PRICE)}／包）`}
-                  name="packs"
-                  unit="包"
-                  value={packsText}
-                  onChange={setPacksText}
-                />
+              <legend className="px-1 text-sm font-medium">認購數量（單包或整箱擇一）</legend>
+              <QuantityField
+                label={`單包購買（AU$${formatAmount(PACK_PRICE)}／包）`}
+                name="packs"
+                unit="包"
+                value={packsText}
+                onChange={(value) => {
+                  setPacksText(value);
+                  if (value !== "") setBoxesText("");
+                }}
+              />
+              <div className="flex items-center gap-3 text-sm font-semibold text-brand">
+                <span className="h-px flex-1 bg-brand-border" />
+                or
+                <span className="h-px flex-1 bg-brand-border" />
               </div>
+              <QuantityField
+                label={`整箱購買（AU$${formatAmount(BOX_PRICE)}／箱，每箱 ${PACKS_PER_BOX} 包）`}
+                name="boxes"
+                unit="箱"
+                value={boxesText}
+                onChange={(value) => {
+                  setBoxesText(value);
+                  if (value !== "") setPacksText("");
+                }}
+              />
               <div className="flex items-baseline justify-between border-t border-brand-border pt-3 text-sm">
                 <span className="text-gray-600">
                   {hasQuantity ? `認購 ${formatQuantity(boxes, packs)}` : "尚未選擇數量"}
