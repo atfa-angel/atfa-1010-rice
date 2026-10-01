@@ -75,6 +75,12 @@ export default function HomePage() {
             <li>由澳洲各大僑團、僑領、台人慈善機構組織認購</li>
             <li className="font-medium text-brand">取貨方式：{PICKUP_NOTE}</li>
             <li className="font-medium text-red-700">發貨日期：{SHIPPING_NOTE}</li>
+            <li>
+              聯繫詢問：
+              <a href={`mailto:${CONTACT_EMAIL}`} className="font-medium text-brand underline">
+                {CONTACT_EMAIL}
+              </a>
+            </li>
           </ul>
         </section>
 
