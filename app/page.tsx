@@ -14,6 +14,7 @@ import {
   formatQuantity,
 } from "@/lib/pricing";
 import { BANK_INFO } from "@/lib/bank";
+import { CONTACT_EMAIL } from "@/lib/contact";
 import SiteHeader from "@/components/SiteHeader";
 
 const initialState: RegisterState = { status: "idle" };
@@ -149,7 +150,13 @@ export default function HomePage() {
       </main>
 
       <footer className="bg-brand py-4 text-center text-xs text-brand-border">
-        澳洲臺灣同鄉會 Australian Taiwanese Friendship Association
+        <p>澳洲臺灣同鄉會 Australian Taiwanese Friendship Association</p>
+        <p className="mt-1">
+          聯繫詢問：
+          <a href={`mailto:${CONTACT_EMAIL}`} className="underline hover:text-white">
+            {CONTACT_EMAIL}
+          </a>
+        </p>
       </footer>
     </>
   );

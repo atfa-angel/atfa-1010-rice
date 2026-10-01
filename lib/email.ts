@@ -1,5 +1,6 @@
 import { Resend } from "resend";
 import { BANK_INFO } from "./bank";
+import { CONTACT_EMAIL } from "./contact";
 import { BOX_PRICE, PACK_PRICE, PICKUP_NOTE, formatAmount, formatQuantity } from "./pricing";
 
 export type ConfirmationEmailParams = {
@@ -30,7 +31,7 @@ export async function sendConfirmationEmail(
 
   const resend = new Resend(apiKey);
   const from = process.env.EMAIL_FROM || "onboarding@resend.dev";
-  const replyTo = process.env.REPLY_TO_EMAIL || undefined;
+  const replyTo = process.env.REPLY_TO_EMAIL || CONTACT_EMAIL;
 
   try {
     const { error } = await resend.emails.send({
@@ -174,7 +175,7 @@ export function renderEmailHtml(params: ConfirmationEmailParams): string {
 
           <tr>
             <td style="padding:20px 28px 28px 28px;font-size:14px;line-height:1.8;">
-              <p style="margin:0 0 4px 0;">再次感謝您的愛心支持！如有任何問題，歡迎與澳洲臺灣同鄉會聯繫。</p>
+              <p style="margin:0 0 4px 0;">再次感謝您的愛心支持！如有任何問題，歡迎與澳洲臺灣同鄉會聯繫：<a href="mailto:${CONTACT_EMAIL}" style="color:${BRAND};">${CONTACT_EMAIL}</a></p>
               <p style="margin:12px 0 0 0;font-weight:700;">澳洲臺灣同鄉會 敬上</p>
             </td>
           </tr>
@@ -227,7 +228,7 @@ ${PICKUP_NOTE}請留意您的 Email 與電話。
 【捐款去向】
 雪梨地區的義賣所得將全數捐給 Thoracic Oncology Group Australasia（TOGA），支持澳洲胸腔腫瘤（肺癌）研究。
 
-再次感謝您的愛心支持！
+再次感謝您的愛心支持！如有任何問題，歡迎與澳洲臺灣同鄉會聯繫：${CONTACT_EMAIL}
 
 澳洲臺灣同鄉會 敬上
 https://www.atfa.org.au
