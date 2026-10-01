@@ -9,6 +9,7 @@ import {
   PACK_PRICE,
   PACK_WEIGHT_KG,
   PICKUP_NOTE,
+  SHIPPING_NOTE,
   computeAmount,
   formatAmount,
   formatQuantity,
@@ -73,6 +74,7 @@ export default function HomePage() {
             <li>每箱體積 44 x 33 x 25 cm</li>
             <li>由澳洲各大僑團、僑領、台人慈善機構組織認購</li>
             <li className="font-medium text-brand">取貨方式：{PICKUP_NOTE}</li>
+            <li className="font-medium text-red-700">發貨日期：{SHIPPING_NOTE}</li>
           </ul>
         </section>
 
@@ -133,6 +135,7 @@ export default function HomePage() {
             </div>
 
             <p className="rounded-md bg-brand-soft px-3 py-2 text-xs text-brand">取貨方式：{PICKUP_NOTE}</p>
+            <p className="rounded-md bg-red-50 px-3 py-2 text-xs font-medium text-red-700">發貨日期：{SHIPPING_NOTE}</p>
 
             {state.status === "error" && (
               <p className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">{state.message}</p>
@@ -269,6 +272,7 @@ function ConfirmationPanel({
       </div>
 
       <p className="rounded-md bg-white px-3 py-2 text-sm text-brand">取貨方式：{PICKUP_NOTE}</p>
+      <p className="rounded-md bg-red-50 px-3 py-2 text-sm font-medium text-red-700">發貨日期：{SHIPPING_NOTE}</p>
 
       <p className="text-xs text-gray-600">
         {state.emailSent

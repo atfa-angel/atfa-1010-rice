@@ -1,7 +1,7 @@
 import { Resend } from "resend";
 import { BANK_INFO } from "./bank";
 import { CONTACT_EMAIL } from "./contact";
-import { BOX_PRICE, PACK_PRICE, PICKUP_NOTE, formatAmount, formatQuantity } from "./pricing";
+import { BOX_PRICE, PACK_PRICE, PICKUP_NOTE, SHIPPING_NOTE, formatAmount, formatQuantity } from "./pricing";
 
 export type ConfirmationEmailParams = {
   to: string;
@@ -162,7 +162,8 @@ export function renderEmailHtml(params: ConfirmationEmailParams): string {
           <tr>
             <td style="padding:16px 28px 8px 28px;font-size:14px;line-height:1.8;">
               <div style="font-size:16px;font-weight:700;color:${BRAND};border-left:4px solid ${BRAND};padding-left:10px;margin-bottom:8px;">取貨說明</div>
-              <p style="margin:0;">${PICKUP_NOTE}請留意您的 Email 與電話。</p>
+              <p style="margin:0 0 8px 0;">${PICKUP_NOTE}請留意您的 Email 與電話。</p>
+              <p style="margin:0;color:#b91c1c;font-weight:700;">${SHIPPING_NOTE}</p>
             </td>
           </tr>
 
@@ -224,6 +225,7 @@ BSB：${BANK_INFO.bsb}
 
 【取貨說明】
 ${PICKUP_NOTE}請留意您的 Email 與電話。
+${SHIPPING_NOTE}
 
 【捐款去向】
 雪梨地區的義賣所得將全數捐給 Thoracic Oncology Group Australasia（TOGA），支持澳洲胸腔腫瘤（肺癌）研究。
