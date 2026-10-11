@@ -16,6 +16,7 @@ import {
 } from "@/lib/pricing";
 import { BANK_INFO } from "@/lib/bank";
 import { CONTACT_EMAIL } from "@/lib/contact";
+import { REGISTRATION_OPEN } from "@/lib/config";
 import SiteHeader from "@/components/SiteHeader";
 
 const initialState: RegisterState = { status: "idle" };
@@ -40,7 +41,10 @@ export default function HomePage() {
 
   return (
     <>
-      <SiteHeader eyebrow="115年 澳洲雙十國慶" title="台灣優米義賣活動 登記" />
+      <SiteHeader
+        eyebrow="115年 澳洲雙十國慶"
+        title={REGISTRATION_OPEN ? "台灣優米義賣活動 登記" : "台灣優米義賣活動 登記已額滿"}
+      />
 
       <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-6 px-4 py-8 sm:px-6">
         <section className="space-y-3 rounded-xl border border-brand-border bg-white p-5 text-sm leading-relaxed">
@@ -84,7 +88,9 @@ export default function HomePage() {
           </ul>
         </section>
 
-        {state.status === "success" ? (
+        {!REGISTRATION_OPEN ? (
+          <SoldOutPanel />
+        ) : state.status === "success" ? (
           <ConfirmationPanel state={state} />
         ) : (
           <form action={formAction} className="space-y-4 rounded-xl border border-brand-border bg-white p-5">
@@ -246,6 +252,23 @@ function QuantityField({
         <span className="text-sm text-gray-600">{unit}</span>
       </div>
     </div>
+  );
+}
+
+function SoldOutPanel() {
+  return (
+    <section className="space-y-3 rounded-xl border border-amber-300 bg-amber-50 p-5 text-center">
+      <h2 className="text-lg font-bold text-amber-800">登記已額滿</h2>
+      <p className="text-sm text-amber-900">
+        感謝大家的熱烈響應！本次台灣優米義賣活動的名額已經額滿，目前暫停接受新的登記。
+      </p>
+      <p className="text-sm text-amber-900">
+        如有任何問題，歡迎與我們聯繫：
+        <a href={`mailto:${CONTACT_EMAIL}`} className="font-medium text-brand underline">
+          {CONTACT_EMAIL}
+        </a>
+      </p>
+    </section>
   );
 }
 

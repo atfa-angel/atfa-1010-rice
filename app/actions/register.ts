@@ -4,6 +4,8 @@ import { prisma } from "@/lib/prisma";
 import { computeAmount } from "@/lib/pricing";
 import { formatReference } from "@/lib/reference";
 import { sendConfirmationEmail } from "@/lib/email";
+import { REGISTRATION_OPEN } from "@/lib/config";
+import { CONTACT_EMAIL } from "@/lib/contact";
 import { revalidatePath } from "next/cache";
 
 export type RegisterState =
@@ -34,6 +36,13 @@ export async function registerAction(
   _prevState: RegisterState,
   formData: FormData
 ): Promise<RegisterState> {
+  if (!REGISTRATION_OPEN) {
+    return {
+      status: "error",
+      message: `登記已額滿，目前暫停登記。如有任何問題，歡迎與我們聯繫：${CONTACT_EMAIL}`,
+    };
+  }
+
   const orgName = String(formData.get("orgName") || "").trim();
   const contactName = String(formData.get("contactName") || "").trim();
   const phone = String(formData.get("phone") || "").trim();
