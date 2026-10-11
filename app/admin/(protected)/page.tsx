@@ -66,40 +66,49 @@ export default async function AdminDashboardPage() {
                 <th className="px-3 py-2.5 text-right font-medium">金額</th>
                 <th className="px-3 py-2.5 font-medium">確認信</th>
                 <th className="px-3 py-2.5 font-medium">備註</th>
-                <th className="px-3 py-2.5 font-medium">收款狀態</th>
+                <th className="sticky right-0 z-10 bg-brand px-3 py-2.5 font-medium shadow-[-6px_0_8px_-6px_rgba(0,0,0,0.3)]">
+                  收款狀態
+                </th>
               </tr>
             </thead>
             <tbody>
-              {registrations.map((r) => (
-                <tr key={r.id} className="border-t border-brand-border/60 even:bg-brand-soft/40">
-                  <td className="whitespace-nowrap px-3 py-2 font-mono text-xs">{formatReference(r.id)}</td>
-                  <td className="whitespace-nowrap px-3 py-2 text-xs text-gray-500">
-                    {r.createdAt.toLocaleString("zh-TW", { timeZone: "Australia/Sydney" })}
-                  </td>
-                  <td className="px-3 py-2">{r.orgName}</td>
-                  <td className="px-3 py-2">{r.contactName}</td>
-                  <td className="whitespace-nowrap px-3 py-2">{r.phone}</td>
-                  <td className="px-3 py-2">{r.email}</td>
-                  <td className="px-3 py-2 text-right">{r.boxes}</td>
-                  <td className="px-3 py-2 text-right">{r.packs}</td>
-                  <td className="whitespace-nowrap px-3 py-2 text-right font-medium">
-                    AU${formatAmount(Number(r.amount))}
-                  </td>
-                  <td className="px-3 py-2 text-xs">
-                    {r.emailSent ? (
-                      <span className="text-brand">已寄送</span>
-                    ) : (
-                      <span className="text-gray-400">未寄送</span>
-                    )}
-                  </td>
-                  <td className="max-w-[160px] truncate px-3 py-2 text-xs text-gray-500" title={r.note ?? undefined}>
-                    {r.note ?? "-"}
-                  </td>
-                  <td className="whitespace-nowrap px-3 py-2">
-                    <PaidToggleButton id={r.id} paid={r.paid} />
-                  </td>
-                </tr>
-              ))}
+              {registrations.map((r, i) => {
+                const rowBg = i % 2 === 1 ? "bg-brand-soft/40" : "bg-white";
+                return (
+                  <tr key={r.id} className={`border-t border-brand-border/60 ${rowBg}`}>
+                    <td className="whitespace-nowrap px-3 py-2 font-mono text-xs">{formatReference(r.id)}</td>
+                    <td className="whitespace-nowrap px-3 py-2 text-xs text-gray-500">
+                      {r.createdAt.toLocaleString("zh-TW", { timeZone: "Australia/Sydney" })}
+                    </td>
+                    <td className="px-3 py-2">{r.orgName}</td>
+                    <td className="px-3 py-2">{r.contactName}</td>
+                    <td className="whitespace-nowrap px-3 py-2">{r.phone}</td>
+                    <td className="max-w-[180px] truncate px-3 py-2" title={r.email}>
+                      {r.email}
+                    </td>
+                    <td className="px-3 py-2 text-right">{r.boxes}</td>
+                    <td className="px-3 py-2 text-right">{r.packs}</td>
+                    <td className="whitespace-nowrap px-3 py-2 text-right font-medium">
+                      AU${formatAmount(Number(r.amount))}
+                    </td>
+                    <td className="px-3 py-2 text-xs">
+                      {r.emailSent ? (
+                        <span className="text-brand">已寄送</span>
+                      ) : (
+                        <span className="text-gray-400">未寄送</span>
+                      )}
+                    </td>
+                    <td className="max-w-[160px] truncate px-3 py-2 text-xs text-gray-500" title={r.note ?? undefined}>
+                      {r.note ?? "-"}
+                    </td>
+                    <td
+                      className={`sticky right-0 z-10 whitespace-nowrap px-3 py-2 shadow-[-6px_0_8px_-6px_rgba(0,0,0,0.15)] ${rowBg}`}
+                    >
+                      <PaidToggleButton id={r.id} paid={r.paid} />
+                    </td>
+                  </tr>
+                );
+              })}
               {registrations.length === 0 && (
                 <tr>
                   <td colSpan={12} className="px-3 py-8 text-center text-gray-400">
