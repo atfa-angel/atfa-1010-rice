@@ -2,15 +2,18 @@ import { prisma } from "@/lib/prisma";
 import { PACKS_PER_BOX, formatAmount } from "@/lib/pricing";
 import { formatReference } from "@/lib/reference";
 import { logoutAction } from "@/app/actions/admin";
+import { isRegistrationOpen } from "@/lib/registration";
 import SiteHeader from "@/components/SiteHeader";
 import PaidToggleButton from "./PaidToggleButton";
+import RegistrationToggleButton from "./RegistrationToggleButton";
 
 export const dynamic = "force-dynamic";
 
 export default async function AdminDashboardPage() {
-  const registrations = await prisma.registration.findMany({
-    orderBy: { createdAt: "desc" },
-  });
+  const [registrations, registrationOpen] = await Promise.all([
+    prisma.registration.findMany({ orderBy: { createdAt: "desc" } }),
+    isRegistrationOpen(),
+  ]);
 
   const totalPacks = registrations.reduce((sum, r) => sum + r.boxes * PACKS_PER_BOX + r.packs, 0);
   const totalQuantity = `${Math.floor(totalPacks / PACKS_PER_BOX)} 箱 ${totalPacks % PACKS_PER_BOX} 包`;
@@ -38,6 +41,8 @@ export default async function AdminDashboardPage() {
       />
 
       <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-6 px-4 py-8 sm:px-6">
+        <RegistrationToggleButton open={registrationOpen} />
+
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-5">
           <SummaryCard label="登記筆數" value={String(registrations.length)} />
           <SummaryCard label={`總數量（共 ${totalPacks} 包）`} value={totalQuantity} />

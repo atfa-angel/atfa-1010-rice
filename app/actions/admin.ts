@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { ADMIN_COOKIE_NAME, createSessionToken, verifySessionToken } from "@/lib/auth";
+import { setRegistrationOpen } from "@/lib/registration";
 
 export type LoginState = { status: "idle" } | { status: "error"; message: string };
 
@@ -59,4 +60,11 @@ export async function togglePaidAction(id: number, nextPaid: boolean) {
     data: { paid: nextPaid, paidAt: nextPaid ? new Date() : null },
   });
   revalidatePath("/admin");
+}
+
+export async function setRegistrationOpenAction(open: boolean) {
+  await requireAdmin();
+  await setRegistrationOpen(open);
+  revalidatePath("/admin");
+  revalidatePath("/");
 }
